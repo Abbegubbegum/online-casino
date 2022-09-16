@@ -34,6 +34,10 @@ io.on("connection", (socket) => {
 		console.log("Raw message: ", msg.toString("base64"));
 		console.log("Message received", decrypt(msg));
 	});
+
+	socket.on("CLIENT_PUBLIC_KEY", (publicKey: Buffer) => {
+		console.log("public key received: " + publicKey.length);
+	});
 });
 
 server.listen(port, () => {

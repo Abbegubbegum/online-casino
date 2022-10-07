@@ -16,38 +16,61 @@ socket.on("MESSAGE", (message) => {
 });
 
 socket.on("PUBLIC_KEY", async (key) => {
-	serverPublicKey = await crypto.subtle.importKey(
-		"spki",
-		importRsaKey(key),
-		{
-			name: "RSA-OAEP",
-			hash: "SHA-256",
-		},
-		true,
-		["encrypt", "wrapKey"]
-	);
+	serverPublicKey = await crypto.subtle
+		.importKey(
+			"spki",
+			importRsaKey(key),
+			{
+				name: "RSA-OAEP",
+				hash: "SHA-256",
+			},
+			true,
+			["encrypt", "wrapKey"]
+		)
+		.catch((err) => {
+			console.log(err);
+		});
 	createRSAKeyPair().then(() => {
 		sendRSAPublicKey();
 	});
 });
 
-socket.on("SECRET_MESSAGE", (msg) => {
-	console.log(msg);
+socket.on("SECRET_MESSAGE", async (msg) => {
+	console.log(await decryptMessage(msg));
 });
 
 /** Send the current draft message */
 function sendMessage(msg) {
+	let enc = new TextEncoder();
 	crypto.subtle
 		.encrypt(
 			{
 				name: "RSA-OAEP",
 			},
 			serverPublicKey,
-			str2ab(msg)
+			enc.encode(msg).buffer
 		)
 		.then((encrypted) => {
 			socket.emit("MESSAGE", encrypted);
+		})
+		.catch((err) => {
+			console.log(err);
 		});
+}
+
+async function decryptMessage(msg) {
+	let dec = new TextDecoder();
+	try {
+		return dec.decode(
+			await crypto.subtle.decrypt(
+				{ name: "RSA-OAEP" },
+				clientKeyPair.privateKey,
+				msg
+			)
+		);
+	} catch (err) {
+		console.log(err);
+	}
 }
 
 function sendBufferMessage(buf) {
@@ -97,16 +120,11 @@ async function createRSAKeyPair() {
 	);
 }
 
-async function createAESKey() {
-	sessionKey = await crypto.subtle.generateKey({})
-}
-
 async function sendRSAPublicKey() {
-	console.log(clientKeyPair.publicKey, serverPublicKey);
+	// console.log(clientKeyPair.publicKey, serverPublicKey);
 	// crypto.subtle
 	// 	.wrapKey("raw", clientKeyPair.publicKey, serverPublicKey, {
 	// 		name: "RSA-OAEP",
-	// 		hash: "SHA-256",
 	// 	})
 	// 	.then((wrappedKey) => {
 	// 		console.log(wrappedKey);
@@ -119,12 +137,6 @@ async function sendRSAPublicKey() {
 		.catch((err) => {
 			console.error(err);
 		});
-	console.log("key: ", key);
-	console.log("ab: ", str2ab("frfdsf"));
-	let encrypted = await crypto.subtle
-		.encrypt({ name: "RSA-OAEP" }, serverPublicKey, key.slice(0, 2))
-		.catch((err) => {
-			console.error(err);
-		});
-	socket.emit("CLIENT_PUBLIC_KEY", encrypted);
+
+	socket.emit("CLIENT_PUBLIC_KEY", key);
 }

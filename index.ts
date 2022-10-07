@@ -20,11 +20,13 @@ const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
 	},
 });
 
+let clientPublicKey = "";
+
 app.use(express.static(cwd() + "/frontend"));
 
-app.get("/", (req, res) => {
-	res.sendFile(cwd() + "/frontend/index.html");
-});
+// app.get("/", (req, res) => {
+// 	res.sendFile(cwd() + "/frontend/index.html");
+// });
 
 io.on("connection", (socket) => {
 	// console.log("User Connected", socket);
@@ -35,8 +37,11 @@ io.on("connection", (socket) => {
 		console.log("Message received", decrypt(msg));
 	});
 
-	socket.on("CLIENT_PUBLIC_KEY", (publicKey: Buffer) => {
-		console.log("public key received: " + publicKey.length);
+	socket.on("CLIENT_PUBLIC_KEY", (key) => {
+		clientPublicKey = `-----BEGIN PUBLIC KEY-----\n${key.toString(
+			"base64"
+		)}\n-----END PUBLIC KEY-----`;
+		socket.emit("SECRET_MESSAGE", clientEncrypt("Wassup my guy"));
 	});
 });
 
@@ -47,17 +52,15 @@ server.listen(port, () => {
 // console.log(publicKey);
 // console.log(privateKey);
 
-function encrypt(msg: string): string {
-	return crypto
-		.publicEncrypt(
-			{
-				key: publicKey,
-				padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
-				oaepHash: "sha256",
-			},
-			Buffer.from(msg)
-		)
-		.toString("base64");
+function clientEncrypt(msg: string): Buffer {
+	return crypto.publicEncrypt(
+		{
+			key: clientPublicKey,
+			padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+			oaepHash: "sha256",
+		},
+		Buffer.from(msg)
+	);
 }
 
 function decrypt(cypher: Buffer): string {

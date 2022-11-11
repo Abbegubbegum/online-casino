@@ -1,7 +1,22 @@
 let socket = io();
-let serverPublicKey;
-let clientKeyPair;
-let sessionKey;
+let serverRSAPublicKey;
+let clientRSAKeyPair;
+let sharedSecret;
+
+let rsaBtn = document.getElementById("rsa-btn");
+let kyberBtn = document.getElementById("kyber-btn");
+
+rsaBtn.addEventListener("click", () => {
+	if (socket.connected) {
+		socket.emit("SETUP_RSA");
+	}
+});
+
+kyberBtn.addEventListener("click", () => {
+	if (socket.connected) {
+		socket.emit("SETUP_KYBER");
+	}
+});
 
 socket.on("connect", () => {
 	console.log("Connected to server");
@@ -15,8 +30,16 @@ socket.on("MESSAGE", (message) => {
 	console.log("Message: " + message);
 });
 
-socket.on("PUBLIC_KEY", async (key) => {
-	serverPublicKey = await crypto.subtle
+socket.on("PUBLIC_KEY_KYBER", (key) => {
+	console.log(key);
+	kyber.encrypt(key).then((ct) => {
+		console.log(ct);
+		socket.emit("CIPHER_TEXT", ct.cyphertext);
+	});
+});
+
+socket.on("PUBLIC_KEY_RSA", async (key) => {
+	serverRSAPublicKey = await crypto.subtle
 		.importKey(
 			"spki",
 			importRsaKey(key),
@@ -35,19 +58,19 @@ socket.on("PUBLIC_KEY", async (key) => {
 	});
 });
 
-socket.on("SECRET_MESSAGE", async (msg) => {
-	console.log(await decryptMessage(msg));
+socket.on("RSA_MESSAGE", async (msg) => {
+	console.log(await decryptRSAMessage(msg));
 });
 
 /** Send the current draft message */
-function sendMessage(msg) {
+function sendRSAMessage(msg) {
 	let enc = new TextEncoder();
 	crypto.subtle
 		.encrypt(
 			{
 				name: "RSA-OAEP",
 			},
-			serverPublicKey,
+			serverRSAPublicKey,
 			enc.encode(msg).buffer
 		)
 		.then((encrypted) => {
@@ -58,13 +81,13 @@ function sendMessage(msg) {
 		});
 }
 
-async function decryptMessage(msg) {
+async function decryptRSAMessage(msg) {
 	let dec = new TextDecoder();
 	try {
 		return dec.decode(
 			await crypto.subtle.decrypt(
 				{ name: "RSA-OAEP" },
-				clientKeyPair.privateKey,
+				clientRSAKeyPair.privateKey,
 				msg
 			)
 		);
@@ -73,9 +96,9 @@ async function decryptMessage(msg) {
 	}
 }
 
-function sendBufferMessage(buf) {
+function sendRSAMessageBuf(buf) {
 	crypto.subtle
-		.encrypt({ name: "RSA-OAEP" }, serverPublicKey, buf)
+		.encrypt({ name: "RSA-OAEP" }, serverRSAPublicKey, buf)
 		.then((encrypted) => {
 			socket.emit("MESSAGE", encrypted);
 		});
@@ -108,7 +131,7 @@ function str2ab(str) {
 }
 
 async function createRSAKeyPair() {
-	clientKeyPair = await crypto.subtle.generateKey(
+	clientRSAKeyPair = await crypto.subtle.generateKey(
 		{
 			name: "RSA-OAEP",
 			modulusLength: 2048,
@@ -133,7 +156,7 @@ async function sendRSAPublicKey() {
 	// 		console.log(err);
 	// 	});
 	let key = await crypto.subtle
-		.exportKey("spki", clientKeyPair.publicKey)
+		.exportKey("spki", clientRSAKeyPair.publicKey)
 		.catch((err) => {
 			console.error(err);
 		});

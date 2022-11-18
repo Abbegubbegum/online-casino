@@ -1,10 +1,12 @@
-import crypto from "crypto";
 import express from "express";
 import { cwd } from "process";
 import http from "http";
 import { Server } from "socket.io";
 import rsa from "./rsa.js";
 import kyber from "./kyber.js";
+import mongoose from "mongoose";
+import userRoutes from "./routes/userRoutes.js";
+
 const app = express();
 const port = 5050;
 const server = http.createServer(app);
@@ -12,11 +14,14 @@ const io = new Server(server);
 
 let clientPublicKey = "";
 
-app.use(express.static(cwd() + "/frontend"));
+app.use(express.json());
 
-// app.get("/", (req, res) => {
-// 	res.sendFile(cwd() + "/frontend/index.html");
-// });
+app.use(express.static(cwd() + "/frontend"));
+app.use("/api/users", userRoutes);
+
+app.get("/api", (req, res) => {
+	res.sendStatus(200);
+});
 
 io.on("connection", (socket) => {
 	// console.log("User Connected", socket);
@@ -61,7 +66,8 @@ io.on("connection", (socket) => {
 	});
 });
 
-server.listen(port, () => {
+server.listen(port, async () => {
+	await mongoose.connect("mongodb://localhost/casino");
 	console.log(`listening on http://localhost:${port}`);
 });
 

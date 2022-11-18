@@ -34,8 +34,8 @@ socket.on("PUBLIC_KEY_KYBER", (key) => {
 	let publicKey = new Uint8Array(key);
 	kyber.encrypt(publicKey).then((ct) => {
 		socket.emit("CIPHER_TEXT", ct.cyphertext);
-		aesKey = ct.secret;
-		console.log("Secret", aesKey);
+		console.log("Secret", ct.secret);
+		importAESKey(ct.secret);
 	});
 });
 
@@ -61,6 +61,7 @@ socket.on("PUBLIC_KEY_RSA", async (key) => {
 
 socket.on("AES_MESSAGE", async (msg) => {
 	console.log(msg);
+	console.log(await decryptAESMessage(msg));
 });
 
 socket.on("RSA_MESSAGE", async (msg) => {
@@ -101,6 +102,22 @@ async function decryptRSAMessage(msg) {
 	}
 }
 
+async function decryptAESMessage(msg) {
+	let dec = new TextDecoder();
+
+	try {
+		return dec.decode(
+			await crypto.subtle.decrypt(
+				{ name: "AES-CBC", iv: msg[1] },
+				aesKey,
+				msg[0]
+			)
+		);
+	} catch (err) {
+		console.log(err);
+	}
+}
+
 function sendRSAMessageBuf(buf) {
 	crypto.subtle
 		.encrypt({ name: "RSA-OAEP" }, serverRSAPublicKey, buf)
@@ -124,6 +141,16 @@ function importRsaKey(pem) {
 	const binaryDer = str2ab(binaryDerString);
 
 	return binaryDer;
+}
+
+async function importAESKey(key) {
+	aesKey = await crypto.subtle.importKey(
+		"raw",
+		key,
+		{ name: "AES-CBC" },
+		false,
+		["encrypt", "decrypt"]
+	);
 }
 
 function str2ab(str) {

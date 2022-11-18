@@ -8,9 +8,7 @@ let publicKey: Uint8Array;
 let cyphertext: Uint8Array;
 let secret: Uint8Array;
 
-let sharedSecret: Uint8Array;
-
-const aesAlgorithm = "aes-256-cbc";
+let aesKey: Uint8Array;
 
 async function initKeys() {
 	const keyPair = await kyber.keyPair();
@@ -27,7 +25,7 @@ async function createCypherText() {
 }
 
 async function decrypt(ct: Uint8Array) {
-	sharedSecret = await kyber.decrypt(ct, privateKey);
+	aesKey = await kyber.decrypt(ct, privateKey);
 }
 
 async function run() {
@@ -48,15 +46,15 @@ async function run() {
 	console.log("Client Secret");
 	console.log(Buffer.from(secret).toString("base64"));
 	console.log("Server Secret");
-	console.log(Buffer.from(sharedSecret).toString("base64"));
+	console.log(Buffer.from(aesKey).toString("base64"));
 }
 
 function getPublicKey(): Uint8Array {
 	return publicKey;
 }
 
-function getSharedSecret(): Uint8Array {
-	return sharedSecret;
+function getAESKey(): Uint8Array {
+	return aesKey;
 }
 
 function getCypherText(): Uint8Array {
@@ -68,17 +66,15 @@ function getPrivateKey(): Uint8Array {
 }
 
 function encryptMessage(msg: string) {
-	let initVector = crypto.randomBytes(16);
-	let aesCipher = crypto.createCipheriv(
-		aesAlgorithm,
-		sharedSecret,
-		initVector
-	);
-	return (
-		aesCipher.update(msg, "utf-8", "hex") +
-		aesCipher.final("hex") +
-		initVector
-	);
+	let iv = crypto.randomBytes(16);
+	let cipher = crypto.createCipheriv("aes-256-cbc", aesKey, iv);
+	let ciphers = [cipher.update(msg, "utf-8"), cipher.final()];
+	console.log(ciphers);
+	let ct = Buffer.concat(ciphers);
+
+	// let ct = cipher.update(msg, "utf8", "utf8") + cipher.final("utf8");
+
+	return [ct, iv];
 }
 
 function decryptMessage(ct: string) {
@@ -90,7 +86,7 @@ export default {
 	createCypherText,
 	decrypt,
 	getPublicKey,
-	getSharedSecret,
+	getSharedSecret: getAESKey,
 	getCypherText,
 	run,
 	getPrivateKey,

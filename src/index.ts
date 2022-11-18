@@ -48,8 +48,10 @@ io.on("connection", (socket) => {
 
 		socket.on("CIPHER_TEXT", async (ct: Uint8Array) => {
 			await kyber.decrypt(new Uint8Array(ct));
-			console.log("Secret", kyber.getSharedSecret());
-			socket.emit("AES_MESSAGE", kyber.encryptMessage("Waddup"));
+			// console.log("Secret", kyber.getSharedSecret());
+			let msg = kyber.encryptMessage("Waddap!");
+			console.log(msg);
+			socket.emit("AES_MESSAGE", msg);
 		});
 
 		socket.on("MESSAGE", (msg) => {

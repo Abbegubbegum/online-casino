@@ -26,7 +26,6 @@ io.on("connection", (socket) => {
 		io.emit("PUBLIC_KEY_RSA", rsa.getPublicKey());
 
 		socket.on("MESSAGE", (msg: Buffer) => {
-			console.log("Raw message: ", msg.toString("base64"));
 			console.log("Message received", rsa.decrypt(msg));
 		});
 
@@ -47,11 +46,13 @@ io.on("connection", (socket) => {
 		io.emit("PUBLIC_KEY_KYBER", kyber.getPublicKey());
 
 		socket.on("CIPHER_TEXT", async (ct: Uint8Array) => {
-			await kyber.decrypt(new Uint8Array(ct));
+			await kyber.decrypt(ct);
 			// console.log("Secret", kyber.getSharedSecret());
-			let msg = kyber.encryptMessage("Waddap!");
-			console.log(msg);
-			socket.emit("AES_MESSAGE", msg);
+
+			socket.emit(
+				"AES_MESSAGE",
+				kyber.encryptMessage("Waddap my home dawg")
+			);
 		});
 
 		socket.on("MESSAGE", (msg) => {

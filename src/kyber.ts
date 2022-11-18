@@ -1,4 +1,5 @@
 import pkg from "kyber-crystals";
+import crypto from "crypto";
 const { kyber } = pkg;
 
 let privateKey: Uint8Array;
@@ -8,6 +9,8 @@ let cyphertext: Uint8Array;
 let secret: Uint8Array;
 
 let sharedSecret: Uint8Array;
+
+const aesAlgorithm = "aes-256-cbc";
 
 async function initKeys() {
 	const keyPair = await kyber.keyPair();
@@ -25,13 +28,14 @@ async function createCypherText() {
 
 async function decrypt(ct: Uint8Array) {
 	sharedSecret = await kyber.decrypt(ct, privateKey);
-	console.log(sharedSecret);
 }
 
 async function run() {
 	await initKeys();
 
 	await createCypherText();
+
+	await decrypt(cyphertext);
 
 	await decrypt(cyphertext);
 
@@ -59,6 +63,28 @@ function getCypherText(): Uint8Array {
 	return cyphertext;
 }
 
+function getPrivateKey(): Uint8Array {
+	return privateKey;
+}
+
+function encryptMessage(msg: string) {
+	let initVector = crypto.randomBytes(16);
+	let aesCipher = crypto.createCipheriv(
+		aesAlgorithm,
+		sharedSecret,
+		initVector
+	);
+	return (
+		aesCipher.update(msg, "utf-8", "hex") +
+		aesCipher.final("hex") +
+		initVector
+	);
+}
+
+function decryptMessage(ct: string) {
+	return;
+}
+
 export default {
 	initKeys,
 	createCypherText,
@@ -66,4 +92,8 @@ export default {
 	getPublicKey,
 	getSharedSecret,
 	getCypherText,
+	run,
+	getPrivateKey,
+	encryptMessage,
+	decryptMessage,
 };

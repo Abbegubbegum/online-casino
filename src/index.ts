@@ -12,8 +12,6 @@ const io = new Server(server);
 
 let clientPublicKey = "";
 
-rsa.initKeys();
-
 app.use(express.static(cwd() + "/frontend"));
 
 // app.get("/", (req, res) => {
@@ -23,6 +21,8 @@ app.use(express.static(cwd() + "/frontend"));
 io.on("connection", (socket) => {
 	// console.log("User Connected", socket);
 	socket.on("SETUP_RSA", () => {
+		rsa.initKeys();
+
 		io.emit("PUBLIC_KEY_RSA", rsa.getPublicKey());
 
 		socket.on("MESSAGE", (msg: Buffer) => {
@@ -46,14 +46,10 @@ io.on("connection", (socket) => {
 
 		io.emit("PUBLIC_KEY_KYBER", kyber.getPublicKey());
 
-		await kyber.createCypherText();
-
 		socket.on("CIPHER_TEXT", async (ct: Uint8Array) => {
-			console.log(new Uint8Array(ct));
-			console.log(kyber.getCypherText());
-			await kyber.decrypt(ct);
-			console.log(kyber.getPublicKey());
-			console.log(kyber.getSharedSecret());
+			await kyber.decrypt(new Uint8Array(ct));
+			console.log("Secret", kyber.getSharedSecret());
+			socket.emit("AES_MESSAGE", kyber.encryptMessage("Waddup"));
 		});
 
 		socket.on("MESSAGE", (msg) => {

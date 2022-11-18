@@ -1,7 +1,7 @@
 let socket = io();
 let serverRSAPublicKey;
 let clientRSAKeyPair;
-let sharedSecret;
+let aesKey;
 
 let rsaBtn = document.getElementById("rsa-btn");
 let kyberBtn = document.getElementById("kyber-btn");
@@ -31,10 +31,11 @@ socket.on("MESSAGE", (message) => {
 });
 
 socket.on("PUBLIC_KEY_KYBER", (key) => {
-	console.log(key);
-	kyber.encrypt(key).then((ct) => {
-		console.log(ct);
+	let publicKey = new Uint8Array(key);
+	kyber.encrypt(publicKey).then((ct) => {
 		socket.emit("CIPHER_TEXT", ct.cyphertext);
+		aesKey = ct.secret;
+		console.log("Secret", aesKey);
 	});
 });
 
@@ -56,6 +57,10 @@ socket.on("PUBLIC_KEY_RSA", async (key) => {
 	createRSAKeyPair().then(() => {
 		sendRSAPublicKey();
 	});
+});
+
+socket.on("AES_MESSAGE", async (msg) => {
+	console.log(msg);
 });
 
 socket.on("RSA_MESSAGE", async (msg) => {

@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "kyber-crystals": "^1.0.4",
+    "socket.io-client": "^4.5.4",
     "vue": "^3.2.41"
   },
   "devDependencies": {

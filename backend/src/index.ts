@@ -11,7 +11,11 @@ import userRoutes from "./routes/userRoutes.js";
 const app = express();
 const port = 5050;
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+	cors: {
+		origin: "http://localhost:5173",
+	},
+});
 
 let clientPublicKey = "";
 
@@ -32,11 +36,11 @@ io.on("connection", (socket) => {
 
 		io.emit("PUBLIC_KEY_RSA", rsa.getPublicKey());
 
-		socket.on("MESSAGE", (msg: Buffer) => {
-			console.log("Message received", rsa.decrypt(msg));
+		socket.on("RSA_MESSAGE", (msg: Buffer) => {
+			console.log("Message received RSA:", rsa.decrypt(msg));
 		});
 
-		socket.on("CLIENT_PUBLIC_KEY", (key) => {
+		socket.on("CLIENT_PUBLIC_KEY", (key: Buffer) => {
 			clientPublicKey = `-----BEGIN PUBLIC KEY-----\n${key.toString(
 				"base64"
 			)}\n-----END PUBLIC KEY-----`;
@@ -61,10 +65,10 @@ io.on("connection", (socket) => {
 				kyber.encryptMessage("Waddap my home dawg")
 			);
 		});
+	});
 
-		socket.on("MESSAGE", (msg) => {
-			console.log(msg);
-		});
+	socket.on("MESSAGE", (msg) => {
+		console.log("Message:", msg);
 	});
 });
 

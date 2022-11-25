@@ -69,7 +69,7 @@ function encryptMessage(msg: string) {
 	let iv = crypto.randomBytes(16);
 	let cipher = crypto.createCipheriv("aes-256-cbc", aesKey, iv);
 	let ciphers = [cipher.update(msg, "utf-8"), cipher.final()];
-	console.log(ciphers);
+	// console.log(ciphers);
 	let ct = Buffer.concat(ciphers);
 
 	// let ct = cipher.update(msg, "utf8", "utf8") + cipher.final("utf8");

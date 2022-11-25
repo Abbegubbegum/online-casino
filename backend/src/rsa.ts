@@ -18,11 +18,11 @@ function initKeys() {
 
 	publicKey = keys.publicKey;
 	privateKey = keys.privateKey;
-	console.log(publicKey);
+	// console.log(publicKey);
 }
 
 function getPublicKey(): string {
-	console.log(publicKey);
+	// console.log(publicKey);
 
 	return publicKey;
 }

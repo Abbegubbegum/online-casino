@@ -1,7 +1,8 @@
 import express from "express";
-import { cwd } from "process";
+import { resolve } from "path";
 import http from "http";
 import { Server } from "socket.io";
+import cors from "cors";
 import rsa from "./rsa.js";
 import kyber from "./kyber.js";
 import mongoose from "mongoose";
@@ -15,8 +16,9 @@ const io = new Server(server);
 let clientPublicKey = "";
 
 app.use(express.json());
+app.use(cors());
 
-app.use(express.static(cwd() + "/frontend"));
+app.use(express.static(resolve("../frontend/dist")));
 app.use("/api/users", userRoutes);
 
 app.get("/api", (req, res) => {

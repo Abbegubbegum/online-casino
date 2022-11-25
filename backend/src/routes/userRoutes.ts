@@ -4,11 +4,21 @@ import userModel, { IUser } from "../models/user.js";
 const router = express.Router();
 
 router.post("/", (req, res) => {
-	let user: any = {
-		username: "Abbe",
-		email: "abbe@gmail.com",
-		password: "yoyoyoyoyo",
-	};
+	let user = req.body;
+
+	if (
+		typeof user.username !== "string" ||
+		user.email !== "string" ||
+		user.password !== "string"
+	) {
+		res.status(400).send("Bad Request");
+	}
+
+	// user = {
+	// 	username: "Abbe",
+	// 	email: "abbe@gmail.com",
+	// 	password: "yoyoyoyoyo",
+	// };
 
 	userModel
 		.create(user)

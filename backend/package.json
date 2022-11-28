@@ -2,11 +2,11 @@
 	"name": "cryptography-backend",
 	"version": "1.0.0",
 	"description": "",
-	"main": "index.js",
+	"main": "main.js",
 	"type": "module",
 	"scripts": {
 		"dev": "tsc",
-		"serve": "nodemon out/index.js"
+		"serve": "nodemon out/main.js"
 	},
 	"keywords": [],
 	"author": "",

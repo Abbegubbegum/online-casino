@@ -77,8 +77,12 @@ function encryptMessage(msg: string) {
 	return [ct, iv];
 }
 
-function decryptMessage(ct: string) {
-	return;
+function decryptMessage(msg: Buffer[]) {
+	let decipher = crypto.createDecipheriv("aes-256-cbc", aesKey, msg[1]);
+
+	let ciphers = [decipher.update(msg[0]), decipher.final()];
+
+	return Buffer.concat(ciphers).toString("utf8");
 }
 
 export default {

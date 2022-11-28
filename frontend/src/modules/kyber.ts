@@ -25,3 +25,21 @@ export async function decryptAESMessage(msg: ArrayBuffer[]) {
 		console.log(err);
 	}
 }
+
+export async function encryptAESMessage(msg: string) {
+	let iv = new Uint8Array(16);
+	crypto.getRandomValues(iv);
+
+	let enc = new TextEncoder();
+	try {
+		let ct = await crypto.subtle.encrypt(
+			{ name: "AES-CBC", iv: iv },
+			aesKey,
+			enc.encode(msg).buffer
+		);
+
+		return [ct, iv];
+	} catch (err) {
+		console.log(err);
+	}
+}

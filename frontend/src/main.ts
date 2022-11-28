@@ -9,14 +9,16 @@ import {
 	getRSAPublicKey,
 	encryptRSAMessage,
 } from "./modules/rsa.js";
-import { importAESKey, decryptAESMessage } from "./modules/kyber.js";
+import {
+	importAESKey,
+	decryptAESMessage,
+	encryptAESMessage,
+} from "./modules/kyber.js";
 import { kyber } from "kyber-crystals";
 
 createApp(App).mount("#app");
 
 const socket = io("ws://localhost:5050");
-
-let AESKey;
 
 socket.on("connect", () => {
 	console.log("Connected to server");
@@ -32,11 +34,12 @@ socket.on("MESSAGE", (message) => {
 
 socket.on("AES_MESSAGE", async (msg: ArrayBuffer[]) => {
 	// console.log(msg);
-	console.log("Message received:", await decryptAESMessage(msg));
+	console.log("Message received AES:", await decryptAESMessage(msg));
+	socket.emit("AES_MESSAGE", await encryptAESMessage("waddup"));
 });
 
 socket.on("RSA_MESSAGE", async (msg: Buffer) => {
-	console.log("Message received:", await decryptRSAMessage(msg));
+	console.log("Message received RSA:", await decryptRSAMessage(msg));
 	socket.emit("RSA_MESSAGE", await encryptRSAMessage("Bitchass"));
 });
 
@@ -54,8 +57,6 @@ socket.on("PUBLIC_KEY_KYBER", (key: Buffer) => {
 		importAESKey(ct.secret);
 	});
 });
-
-socket.emit("MESSAGE", "hello");
 
 export function initRSA() {
 	socket.emit("SETUP_RSA");

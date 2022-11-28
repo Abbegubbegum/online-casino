@@ -3,8 +3,8 @@ import { resolve } from "path";
 import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
-import rsa from "./rsa.js";
-import kyber from "./kyber.js";
+import rsa from "./modules/rsa.js";
+import kyber from "./modules/kyber.js";
 import mongoose from "mongoose";
 import userRoutes from "./routes/userRoutes.js";
 
@@ -30,45 +30,45 @@ app.get("/api", (req, res) => {
 });
 
 io.on("connection", (socket) => {
-	// console.log("User Connected", socket);
+	socket.on("MESSAGE", (msg) => {
+		console.log("Message:", msg);
+	});
+
 	socket.on("SETUP_RSA", () => {
 		rsa.initKeys();
 
 		io.emit("PUBLIC_KEY_RSA", rsa.getPublicKey());
+	});
 
-		socket.on("RSA_MESSAGE", (msg: Buffer) => {
-			console.log("Message received RSA:", rsa.decrypt(msg));
-		});
+	socket.on("RSA_MESSAGE", (msg: Buffer) => {
+		console.log("Message received RSA:", rsa.decrypt(msg));
+	});
 
-		socket.on("CLIENT_PUBLIC_KEY", (key: Buffer) => {
-			clientPublicKey = `-----BEGIN PUBLIC KEY-----\n${key.toString(
-				"base64"
-			)}\n-----END PUBLIC KEY-----`;
-			socket.emit(
-				"RSA_MESSAGE",
-				rsa.encrypt("Wassup my guy", clientPublicKey)
-			);
-		});
+	socket.on("CLIENT_PUBLIC_KEY", (key: Buffer) => {
+		clientPublicKey = `-----BEGIN PUBLIC KEY-----\n${key.toString(
+			"base64"
+		)}\n-----END PUBLIC KEY-----`;
+		socket.emit(
+			"RSA_MESSAGE",
+			rsa.encrypt("Wassup my guy", clientPublicKey)
+		);
 	});
 
 	socket.on("SETUP_KYBER", async () => {
 		await kyber.initKeys();
 
 		io.emit("PUBLIC_KEY_KYBER", kyber.getPublicKey());
-
-		socket.on("CIPHER_TEXT", async (ct: Uint8Array) => {
-			await kyber.decrypt(ct);
-			// console.log("Secret", kyber.getSharedSecret());
-
-			socket.emit(
-				"AES_MESSAGE",
-				kyber.encryptMessage("Waddap my home dawg")
-			);
-		});
 	});
 
-	socket.on("MESSAGE", (msg) => {
-		console.log("Message:", msg);
+	socket.on("CIPHER_TEXT", async (ct: Uint8Array) => {
+		await kyber.decrypt(ct);
+		// console.log("Secret", kyber.getSharedSecret());
+
+		socket.emit("AES_MESSAGE", kyber.encryptMessage("Waddap my home dawg"));
+	});
+
+	socket.on("AES_MESSAGE", async (msg: Buffer[]) => {
+		console.log("Message received AES:", kyber.decryptMessage(msg));
 	});
 });
 

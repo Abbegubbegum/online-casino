@@ -1,4 +1,5 @@
 let aesKey: CryptoKey;
+let keyIsReady = false;
 
 export async function importAESKey(key: ArrayBuffer) {
 	aesKey = await crypto.subtle.importKey(
@@ -8,9 +9,14 @@ export async function importAESKey(key: ArrayBuffer) {
 		false,
 		["encrypt", "decrypt"]
 	);
+	keyIsReady = true;
 }
 
 export async function decryptAESMessage(msg: ArrayBuffer[]) {
+	if (!keyIsReady) {
+		return;
+	}
+
 	let dec = new TextDecoder();
 
 	try {
@@ -27,6 +33,10 @@ export async function decryptAESMessage(msg: ArrayBuffer[]) {
 }
 
 export async function encryptAESMessage(msg: string) {
+	if (!keyIsReady) {
+		return;
+	}
+
 	let iv = new Uint8Array(16);
 	crypto.getRandomValues(iv);
 

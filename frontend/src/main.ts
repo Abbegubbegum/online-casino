@@ -15,8 +15,9 @@ import {
 	encryptAESMessage,
 } from "./modules/kyber.js";
 import { kyber } from "kyber-crystals";
+import router from "./router";
 
-createApp(App).mount("#app");
+createApp(App).use(router).mount("#app");
 
 const socket = io("ws://localhost:5050");
 
@@ -64,4 +65,12 @@ export function initRSA() {
 
 export function initKyber() {
 	socket.emit("SETUP_KYBER");
+}
+
+export function sendMessage(event: string, data: string) {
+	encryptAESMessage(data).then((encrypted) => {
+		if (encrypted) {
+			socket.emit(event, encrypted);
+		}
+	});
 }

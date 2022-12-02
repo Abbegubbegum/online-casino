@@ -2,7 +2,7 @@
 
 <template>
 	<div>
-		<router-view></router-view>
+		<h1>Home View</h1>
 	</div>
 </template>
 

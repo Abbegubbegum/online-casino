@@ -16,6 +16,8 @@ export class RouletteGame extends EventEmitter {
 	bets: Bet[] = [];
 	lastResult = "";
 
+	static results = ["CT", "T"];
+
 	constructor() {
 		super();
 	}
@@ -26,16 +28,45 @@ export class RouletteGame extends EventEmitter {
 		this.emit("START_ROLL");
 
 		setTimeout(this.payout, 10000);
-
-        
 	}
 
-	payout() {}
+	async payout() {
+		const result =
+			RouletteGame.results[Math.random() * RouletteGame.results.length];
+
+		for (let i = 0; i < this.bets.length; i++) {
+			const bet = this.bets[i];
+
+			this.bets.splice(i, 1);
+
+			if (bet.option === result) {
+				let account = await user.findOne({
+					username: bet.username,
+				});
+
+				if (!account) {
+					continue;
+				}
+
+				account.balance += bet.amount * 2;
+
+				account.save();
+
+				bet.socket.emit("BALANCE", account.balance);
+			}
+		}
+		this.emit("PAYOUT_COMPLETE");
+		this.startBetting();
+	}
 
 	startBetting() {
 		this.bettingIsOn = true;
 		this.isRolling = false;
 		this.emit("START_BETTING");
+
+		setTimeout(() => {
+			this.roll();
+		}, 20000);
 	}
 
 	async placeBet(

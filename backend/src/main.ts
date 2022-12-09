@@ -47,9 +47,9 @@ io.on("connection", (socket) => {
 	// });
 
 	socket.on("CLIENT_PUBLIC_KEY", (key: Buffer) => {
-		clientPublicKey = `-----BEGIN PUBLIC KEY-----\n${key.toString(
-			"base64"
-		)}\n-----END PUBLIC KEY-----`;
+		clientPublicKey = `-----BEGIN PUBLIC KEY-----\n
+		${key.toString("base64")}\n
+		-----END PUBLIC KEY-----`;
 		// socket.emit(
 		// 	"RSA_MESSAGE",
 		// 	rsa.encrypt("Wassup my guy", clientPublicKey)

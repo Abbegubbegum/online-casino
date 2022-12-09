@@ -16,10 +16,27 @@ import {
 } from "./modules/kyber.js";
 import { kyber } from "kyber-crystals";
 import router from "./router";
+import { createStore } from "vuex";
+import Decrypter from "./modules/decrypter.js";
 
-createApp(App).use(router).mount("#app");
+const decryptedSocket = new Decrypter();
+
+const store = createStore({
+	state() {
+		return {
+			username: "",
+			balance: 0,
+		};
+	},
+});
+
+createApp(App).use(router).use(store).mount("#app");
 
 const socket = io("ws://localhost:5050");
+
+socket.onAny((event, ...args) => {
+	decryptedSocket.processMessage(event, args);
+});
 
 socket.on("connect", () => {
 	console.log("Connected to server");
@@ -73,4 +90,8 @@ export function sendMessage(event: string, data: string) {
 			socket.emit(event, encrypted);
 		}
 	});
+}
+
+export function sendBet(amount: number, option: string) {
+	sendMessage("PLACE_BET", JSON.stringify({ amount, option }));
 }

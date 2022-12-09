@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-	<div>
+	<div class="w-full h-screen">
 		<router-view></router-view>
 	</div>
 </template>

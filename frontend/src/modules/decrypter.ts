@@ -1,9 +1,16 @@
 import EventEmitter from "events";
-import { decryptAESMessage } from "./kyber";
+import { Socket } from "socket.io-client";
+import { decryptAESMessage, encryptAESMessage } from "./kyber";
 
-export default class Decrypter extends EventEmitter {
-	constructor() {
+export default class DecryptedSocket extends EventEmitter {
+	socket: Socket;
+	constructor(socket: Socket) {
 		super();
+		this.socket = socket;
+	}
+
+	async sendMessage(event: string, data: any) {
+		this.socket.emit(event, await encryptAESMessage(JSON.stringify(data)));
 	}
 
 	async processMessage(event: string, data: ArrayBuffer[]) {

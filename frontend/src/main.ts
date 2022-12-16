@@ -13,13 +13,12 @@ import {
 	importAESKey,
 	decryptAESMessage,
 	encryptAESMessage,
+	keyIsReady,
 } from "./modules/kyber.js";
 import { kyber } from "kyber-crystals";
 import router from "./router";
 import { createStore } from "vuex";
-import Decrypter from "./modules/decrypter.js";
-
-const decryptedSocket = new Decrypter();
+import DecryptedSocket from "./modules/decrypter.js";
 
 const store = createStore({
 	state() {
@@ -33,6 +32,7 @@ const store = createStore({
 createApp(App).use(router).use(store).mount("#app");
 
 const socket = io("ws://localhost:5050");
+export const decryptedSocket = new DecryptedSocket(socket);
 
 socket.onAny((event, ...args) => {
 	decryptedSocket.processMessage(event, args);
@@ -81,7 +81,7 @@ export function initRSA() {
 }
 
 export function initKyber() {
-	socket.emit("SETUP_KYBER");
+	if (!keyIsReady) socket.emit("SETUP_KYBER");
 }
 
 export function sendMessage(event: string, data: string) {
@@ -93,5 +93,9 @@ export function sendMessage(event: string, data: string) {
 }
 
 export function sendBet(amount: number, option: string) {
-	sendMessage("PLACE_BET", JSON.stringify({ amount, option }));
+	decryptedSocket.sendMessage("PLACE_BET", {
+		username: store.state.username,
+		amount,
+		option,
+	});
 }

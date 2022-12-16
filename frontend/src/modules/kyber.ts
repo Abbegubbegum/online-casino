@@ -1,5 +1,5 @@
 let aesKey: CryptoKey;
-let keyIsReady = false;
+export let keyIsReady = false;
 
 export async function importAESKey(key: ArrayBuffer) {
 	aesKey = await crypto.subtle.importKey(

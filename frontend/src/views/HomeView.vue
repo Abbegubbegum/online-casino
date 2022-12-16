@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useStore } from "vuex";
-import { sendBet } from "../main";
-
+import router from "../router";
+import { initKyber, sendBet } from "../main";
+initKyber();
 const store = useStore();
+
+if (!store.state.username) {
+	router.push("/login");
+}
 store.state.balance = 10000;
 
 const betAmount = ref(0);
@@ -45,7 +50,7 @@ function placeBet(ev: any) {
 			<div class="flex flex-col justify-around items-center">
 				<input
 					type="submit"
-					class="py-6 px-10 border border-gray-300 bg-blue-500"
+					class="py-6 px-10 border border-gray-300 bg-blue-500 cursor-pointer"
 					form="bettingForm"
 					value="CT"
 				/>
@@ -53,7 +58,7 @@ function placeBet(ev: any) {
 			<div class="flex flex-col justify-around items-center">
 				<input
 					type="submit"
-					class="py-6 px-10 border border-gray-300 bg-red-600"
+					class="py-6 px-10 border border-gray-300 bg-red-600 cursor-pointer"
 					form="bettingForm"
 					value="T"
 				/>

@@ -60,7 +60,7 @@ export default {
 	initKeys,
 	decrypt,
 	getPublicKey,
-	getSharedSecret: getAESKey,
+	getAESKey,
 	getCypherText,
 	getPrivateKey,
 	encryptMessage,

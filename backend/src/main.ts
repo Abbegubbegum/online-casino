@@ -1,13 +1,15 @@
 import express from "express";
 import { resolve } from "path";
 import http from "http";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import cors from "cors";
 import rsa from "./modules/rsa.js";
 import kyber from "./modules/kyber.js";
 import mongoose from "mongoose";
 import userRoutes from "./routes/userRoutes.js";
 import { RouletteGame } from "./modules/roulette.js";
+import Decrypter from "./modules/decryptor.js";
+import { json } from "stream/consumers";
 
 const app = express();
 const port = 5050;
@@ -33,13 +35,18 @@ rsa.initKeys();
 kyber.initKeys();
 
 let roulette = new RouletteGame();
+let decryptedSocket = new Decrypter();
 
 io.on("connection", (socket) => {
 	let clientPublicKey = "";
 	let aesKey: Uint8Array;
 
+	socket.onAny((event, data) => {
+		decryptedSocket.processMessage(socket, event, data, aesKey);
+	});
+
 	socket.on("SETUP_RSA", () => {
-		io.emit("PUBLIC_KEY_RSA", rsa.getPublicKey());
+		socket.emit("PUBLIC_KEY_RSA", rsa.getPublicKey());
 	});
 
 	// socket.on("RSA_MESSAGE", (msg: Buffer) => {
@@ -57,7 +64,7 @@ io.on("connection", (socket) => {
 	});
 
 	socket.on("SETUP_KYBER", async () => {
-		io.emit("PUBLIC_KEY_KYBER", kyber.getPublicKey());
+		socket.emit("PUBLIC_KEY_KYBER", kyber.getPublicKey());
 	});
 
 	socket.on("CIPHER_TEXT", async (ct: Uint8Array) => {
@@ -73,6 +80,12 @@ io.on("connection", (socket) => {
 	socket.on("AES_MESSAGE", async (msg: Buffer[]) => {
 		console.log("Message received AES:", kyber.decryptMessage(msg, aesKey));
 	});
+});
+
+decryptedSocket.on("PLACE_BET", (dataString: string, socket: Socket) => {
+	const data = JSON.parse(dataString);
+	
+	roulette.placeBet(socket, data.username, data.amount, data.option);
 });
 
 server.listen(port, async () => {

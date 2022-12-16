@@ -77,6 +77,8 @@ export class RouletteGame extends EventEmitter {
 	): Promise<boolean> {
 		if (!this.bettingIsOn) return false;
 
+		console.log("BET", username, amount, option);
+
 		let result = await user.findOne({
 			username: username,
 			balance: { $gte: amount },

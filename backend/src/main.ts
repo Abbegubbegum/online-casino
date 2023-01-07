@@ -20,7 +20,7 @@ const port = 5050;
 const server = http.createServer(app);
 const io = new Server(server, {
 	cors: {
-		origin: "http://localhost:5173",
+		origin: "*",
 	},
 });
 
@@ -75,22 +75,47 @@ io.on("connection", (socket) => {
 		aesKey = await kyber.decrypt(ct);
 		// console.log("Secret", kyber.getSharedSecret());
 
-		socket.emit(
-			"AES_MESSAGE",
-			kyber.encryptMessage("Waddap my home dawg", aesKey)
-		);
+		// socket.emit(
+		// 	"AES_MESSAGE",
+		// 	kyber.encryptMessage("Waddap my home dawg", aesKey)
+		// );
 	});
 
 	socket.on("AES_MESSAGE", async (msg: Buffer[]) => {
 		console.log("Message received AES:", kyber.decryptMessage(msg, aesKey));
 	});
+
+	roulette.on("RESULT", (result: string) => {
+		socket.emit("ROULETTE_RESULT", result);
+	});
+
+	roulette.on("START_BETTING", () => {
+		socket.emit("START_BETTING");
+	});
+
+	roulette.on("START_ROLL", () => {
+		socket.emit("START_ROLLING");
+	});
 });
 
-decryptedSocket.on("PLACE_BET", (dataString: string, socket: Socket) => {
-	const data = JSON.parse(dataString);
+decryptedSocket.on(
+	"PLACE_BET",
+	async (dataString: string, socket: Socket, key: Uint8Array) => {
+		const data = JSON.parse(dataString);
 
-	roulette.placeBet(socket, data.username, data.amount, data.option);
-});
+		const res = await roulette.placeBet(
+			socket,
+			key,
+			data.username,
+			data.amount,
+			data.option
+		);
+
+		if (!res) {
+			socket.emit("FAILED_BET", kyber.encryptMessage(dataString, key));
+		}
+	}
+);
 
 server.listen(port, async () => {
 	await mongoose.connect(databaseUri);

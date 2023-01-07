@@ -13,6 +13,6 @@ export default class Decrypter extends EventEmitter {
 		data: Buffer[],
 		key: Uint8Array
 	) {
-		if (key) this.emit(event, kyber.decryptMessage(data, key), socket);
+		if (key) this.emit(event, kyber.decryptMessage(data, key), socket, key);
 	}
 }

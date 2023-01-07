@@ -9,22 +9,28 @@ const email = ref("");
 const password = ref("");
 const confirmPassword = ref("");
 
-async function submitForm() {
+async function register() {
 	if (password.value !== confirmPassword.value) {
 		return;
 	}
 
-	const res = await fetch("http://localhost:5050/users", {
+	const res = await fetch("http://localhost:5050/api/users", {
 		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
 		body: JSON.stringify({
-			username,
-			email,
-			password,
+			username: username.value,
+			email: email.value,
+			password: password.value,
 		}),
 	});
 
 	if (res.ok) {
+		const data = await res.json();
+
 		store.state.username = username.value;
+		store.state.balance = data.balance;
 		router.push("/");
 	} else {
 	}
@@ -36,7 +42,7 @@ async function submitForm() {
 		<div class="bg-gray-500 p-10">
 			<form
 				class="flex flex-col gap-6 text-black"
-				@submit.prevent="submitForm"
+				@submit.prevent="register"
 			>
 				<input
 					type="text"

@@ -16,7 +16,7 @@ let user = new Schema({
 	},
 	balance: {
 		type: Number,
-		default: 0,
+		default: 10000,
 	},
 });
 

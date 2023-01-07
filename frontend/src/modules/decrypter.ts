@@ -14,6 +14,8 @@ export default class DecryptedSocket extends EventEmitter {
 	}
 
 	async processMessage(event: string, data: ArrayBuffer[]) {
+		if (!event || !data || typeof data === "string") return;
+
 		this.emit(event, await decryptAESMessage(data));
 	}
 }

@@ -25,6 +25,10 @@ const store = createStore({
 		return {
 			username: "",
 			balance: 0,
+			previousResult: "",
+			isRolling: false,
+			ctBet: 0,
+			tBet: 0,
 		};
 	},
 });
@@ -34,8 +38,8 @@ createApp(App).use(router).use(store).mount("#app");
 const socket = io("ws://localhost:5050");
 export const decryptedSocket = new DecryptedSocket(socket);
 
-socket.onAny((event, ...args) => {
-	decryptedSocket.processMessage(event, args);
+socket.onAny((event, data) => {
+	decryptedSocket.processMessage(event, data);
 });
 
 socket.on("connect", () => {
@@ -74,6 +78,30 @@ socket.on("PUBLIC_KEY_KYBER", (key: Buffer) => {
 		socket.emit("CIPHER_TEXT", ct.cyphertext);
 		importAESKey(ct.secret);
 	});
+});
+
+socket.on("ROULETTE_RESULT", (result: string) => {
+	store.state.previousResult = result;
+});
+
+socket.on("START_BETTING", () => {
+	store.state.isRolling = false;
+	store.state.ctBet = 0;
+	store.state.tBet = 0;
+});
+
+socket.on("START_ROLLING", () => {
+	store.state.isRolling = true;
+});
+
+decryptedSocket.on("BALANCE", (balance: string) => {
+	store.state.balance = parseInt(balance);
+});
+
+decryptedSocket.on("FAILED_BET", (dataString: string) => {
+	const data = JSON.parse(dataString);
+
+	store.state.balance += data.amount;
 });
 
 export function initRSA() {

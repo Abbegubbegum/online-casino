@@ -9,7 +9,11 @@ import mongoose from "mongoose";
 import userRoutes from "./routes/userRoutes.js";
 import { RouletteGame } from "./modules/roulette.js";
 import Decrypter from "./modules/decryptor.js";
-import { json } from "stream/consumers";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const databaseUri = process.env.DB_URI || "mongodb://localhost/casino";
 
 const app = express();
 const port = 5050;
@@ -84,12 +88,12 @@ io.on("connection", (socket) => {
 
 decryptedSocket.on("PLACE_BET", (dataString: string, socket: Socket) => {
 	const data = JSON.parse(dataString);
-	
+
 	roulette.placeBet(socket, data.username, data.amount, data.option);
 });
 
 server.listen(port, async () => {
-	await mongoose.connect("mongodb://localhost/casino");
+	await mongoose.connect(databaseUri);
 	console.log(`listening on http://localhost:${port}`);
 });
 

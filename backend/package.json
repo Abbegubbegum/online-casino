@@ -16,6 +16,7 @@
 		"@types/node": "^18.7.14",
 		"@types/socket.io": "^3.0.2",
 		"cors": "^2.8.5",
+		"dotenv": "^16.0.3",
 		"express": "^4.18.1",
 		"kyber-crystals": "^1.0.4",
 		"mongoose": "^6.7.2",

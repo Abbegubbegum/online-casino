@@ -16,7 +16,7 @@ export class RouletteGame extends EventEmitter {
 	bettingIsOn = true;
 
 	bets: Bet[] = [];
-	lastResult = "";
+	prevResults: string[] = []
 
 	static results = ["CT", "T"];
 
@@ -41,6 +41,12 @@ export class RouletteGame extends EventEmitter {
 			RouletteGame.results[
 				Math.floor(Math.random() * RouletteGame.results.length)
 			];
+
+		this.prevResults.push(result);
+
+		if (this.prevResults.length > 10) {
+			this.prevResults.shift();
+		}
 
 		this.emit("RESULT", result);
 		console.log("ROULETTE RESULT: " + result);

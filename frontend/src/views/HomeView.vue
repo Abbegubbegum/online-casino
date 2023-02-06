@@ -3,7 +3,9 @@ import { ref } from "vue";
 import { useStore } from "vuex";
 import router from "../router";
 import { initKyber, sendBet } from "../main";
+
 initKyber();
+
 const store = useStore();
 
 if (!store.state.username) {
@@ -39,7 +41,7 @@ function placeBet(ev: any) {
 			<h2 class="text-2xl absolute left-6">
 				Username: {{ store.state.username }}
 			</h2>
-			<h1 class="text-5xl font-bold">Casino Royale</h1>
+			<h1 class="text-5xl font-bold">Crypto Casino</h1>
 			<h2 class="text-2xl absolute right-6">
 				Balance: {{ store.state.balance }}
 			</h2>
@@ -65,7 +67,10 @@ function placeBet(ev: any) {
 						Rolling...
 					</p>
 
-					<p>Last Result: {{ store.state.previousResult }}</p>
+					<p>Previous Results:</p>
+					<p>
+						{{ store.state.previousResults.join("  ") }}
+					</p>
 				</div>
 			</form>
 			<div class="flex flex-col justify-around items-center">

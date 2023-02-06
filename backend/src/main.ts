@@ -85,6 +85,9 @@ io.on("connection", (socket) => {
 		console.log("Message received AES:", kyber.decryptMessage(msg, aesKey));
 	});
 
+	// Send the socket the current previous results from the roulette game
+	socket.emit("PREVIOUS_RESULTS", roulette.prevResults);
+
 	roulette.on("RESULT", (result: string) => {
 		socket.emit("ROULETTE_RESULT", result);
 	});

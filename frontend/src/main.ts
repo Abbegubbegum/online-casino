@@ -25,7 +25,7 @@ const store = createStore({
 		return {
 			username: "",
 			balance: 0,
-			previousResult: "",
+			previousResults: [] as string[],
 			isRolling: false,
 			ctBet: 0,
 			tBet: 0,
@@ -80,8 +80,16 @@ socket.on("PUBLIC_KEY_KYBER", (key: Buffer) => {
 	});
 });
 
+socket.on("PREVIOUS_RESULTS", (results: string[]) => {
+	store.state.previousResults = results;
+});
+
 socket.on("ROULETTE_RESULT", (result: string) => {
-	store.state.previousResult = result;
+	store.state.previousResults.push(result);
+
+	if (store.state.previousResults.length > 10) {
+		store.state.previousResults.shift();
+	}
 });
 
 socket.on("START_BETTING", () => {

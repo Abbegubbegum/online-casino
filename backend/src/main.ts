@@ -58,13 +58,13 @@ io.on("connection", (socket) => {
 	// });
 
 	socket.on("CLIENT_PUBLIC_KEY", (key: Buffer) => {
-		clientPublicKey = `-----BEGIN PUBLIC KEY-----\n
-		${key.toString("base64")}\n
-		-----END PUBLIC KEY-----`;
-		// socket.emit(
-		// 	"RSA_MESSAGE",
-		// 	rsa.encrypt("Wassup my guy", clientPublicKey)
-		// );
+		clientPublicKey = `-----BEGIN PUBLIC KEY-----\n${key.toString(
+			"base64"
+		)}\n-----END PUBLIC KEY-----`;
+		socket.emit(
+			"RSA_MESSAGE",
+			rsa.encrypt("Hello World!", clientPublicKey)
+		);
 	});
 
 	socket.on("SETUP_KYBER", async () => {
@@ -75,10 +75,10 @@ io.on("connection", (socket) => {
 		aesKey = await kyber.decrypt(ct);
 		// console.log("Secret", kyber.getSharedSecret());
 
-		// socket.emit(
-		// 	"AES_MESSAGE",
-		// 	kyber.encryptMessage("Waddap my home dawg", aesKey)
-		// );
+		socket.emit(
+			"AES_MESSAGE",
+			kyber.encryptMessage("Hello World!", aesKey)
+		);
 	});
 
 	socket.on("AES_MESSAGE", async (msg: Buffer[]) => {

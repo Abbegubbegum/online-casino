@@ -16,13 +16,13 @@ export class RouletteGame extends EventEmitter {
 	bettingIsOn = true;
 
 	bets: Bet[] = [];
-	prevResults: string[] = []
+	prevResults: string[] = [];
 
 	static results = ["CT", "T"];
 
 	constructor() {
 		super();
-		this.startBetting();
+		// this.startBetting();
 	}
 
 	roll() {

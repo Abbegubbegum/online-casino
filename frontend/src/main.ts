@@ -57,12 +57,12 @@ socket.on("MESSAGE", (message) => {
 socket.on("AES_MESSAGE", async (msg: ArrayBuffer[]) => {
 	// console.log(msg);
 	console.log("Message received AES:", await decryptAESMessage(msg));
-	socket.emit("AES_MESSAGE", await encryptAESMessage("waddup"));
+	// socket.emit("AES_MESSAGE", await encryptAESMessage("waddup"));
 });
 
 socket.on("RSA_MESSAGE", async (msg: Buffer) => {
 	console.log("Message received RSA:", await decryptRSAMessage(msg));
-	socket.emit("RSA_MESSAGE", await encryptRSAMessage("Bitchass"));
+	// socket.emit("RSA_MESSAGE", await encryptRSAMessage("Bitchass"));
 });
 
 socket.on("PUBLIC_KEY_RSA", async (key: string) => {

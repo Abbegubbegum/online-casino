@@ -68,9 +68,17 @@ function placeBet(ev: any) {
 					</p>
 
 					<p>Previous Results:</p>
-					<p>
-						{{ store.state.previousResults.join("  ") }}
-					</p>
+					<div class="flex gap-3">
+						<span
+							v-for="result in store.state.previousResults"
+							:class="{
+								'text-red-600': result === 'T',
+								'text-blue-500': result === 'CT',
+							}"
+						>
+							{{ result }}
+						</span>
+					</div>
 				</div>
 			</form>
 			<div class="flex flex-col justify-around items-center">

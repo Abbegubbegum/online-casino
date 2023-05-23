@@ -19,6 +19,8 @@ export async function decryptAESMessage(msg: ArrayBuffer[]) {
 
 	let dec = new TextDecoder();
 
+	// console.log("MSG", msg);
+
 	try {
 		return dec.decode(
 			await crypto.subtle.decrypt(

@@ -22,7 +22,7 @@ export class RouletteGame extends EventEmitter {
 
 	constructor() {
 		super();
-		// this.startBetting();
+		this.startBetting();
 	}
 
 	roll() {

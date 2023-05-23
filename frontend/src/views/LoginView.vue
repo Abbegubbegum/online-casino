@@ -22,8 +22,6 @@ async function login() {
 	if (res.ok) {
 		const data = await res.json();
 
-		console.log(data);
-
 		store.state.username = username.value;
 		store.state.balance = data.balance;
 		router.push("/");

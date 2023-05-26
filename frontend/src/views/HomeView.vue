@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useStore } from "vuex";
 import router from "../router";
 import { initKyber, sendBet } from "../main";
@@ -7,6 +7,24 @@ import { initKyber, sendBet } from "../main";
 initKyber();
 
 const store = useStore();
+
+watch(
+	() => store.state.isRolling,
+	(newVal: boolean, oldVal: boolean) => {
+		if (!newVal && oldVal) {
+			newestResult.value =
+				store.state.previousResults[
+					store.state.previousResults.length - 1
+				];
+
+			setTimeout(() => {
+				newestResult.value = "";
+			}, 2000);
+		}
+	}
+);
+
+const newestResult = ref("");
 
 if (!store.state.username) {
 	router.push("/login");
@@ -63,12 +81,21 @@ function placeBet(ev: any) {
 				/>
 
 				<div class="m-6 text-3xl font-bold text-center">
-					<p :class="{ 'opacity-0': !store.state.isRolling }">
-						Rolling...
+					<p v-if="store.state.isRolling">Rolling...</p>
+					<p v-else-if="newestResult">
+						Rolled:
+						<span
+							:class="{
+								'text-red-600': newestResult === 'T',
+								'text-blue-500': newestResult === 'CT',
+							}"
+							>{{ newestResult }}</span
+						>
 					</p>
+					<p v-else class="opacity-0">THING</p>
 
 					<p>Previous Results:</p>
-					<div class="flex gap-3">
+					<div class="flex justify-center gap-3">
 						<span
 							v-for="result in store.state.previousResults"
 							:class="{
